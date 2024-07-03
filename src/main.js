@@ -9,7 +9,7 @@ const loader = document.querySelector('#loader');
 let currentPage = 1;
 let currentQuery = '';
 
-form.addEventListener('submit', async event => {
+form.addEventListener('submit', event => {
   event.preventDefault();
   const query = input.value.trim();
   if (query === '') {
@@ -25,31 +25,33 @@ form.addEventListener('submit', async event => {
   clearGallery();
   showLoader();
   input.value = '';
-  try {
-    const data = await fetchImages(query, currentPage);
-    setTimeout(() => {
-      hideLoader();
-      if (data.hits.length === 0) {
-        iziToast.info({
-          title: 'No results',
-          message:
-            'Sorry, there are no images matching your search query. Please try again!',
+  
+  fetchImages(query, currentPage)
+    .then(data => {
+      setTimeout(() => {
+        hideLoader();
+        if (data.hits.length === 0) {
+          iziToast.info({
+            title: 'No results',
+            message:
+              'Sorry, there are no images matching your search query. Please try again!',
+            position: 'center',
+          });
+          return;
+        }
+        renderImages(data.hits);
+      }, 2000);
+    })
+    .catch(error => {
+      setTimeout(() => {
+        hideLoader();
+        iziToast.error({
+          title: 'Error',
+          message: 'Something went wrong. Please try again later.',
           position: 'center',
         });
-        return;
-      }
-      renderImages(data.hits);
-    }, 2000);
-  } catch (error) {
-    setTimeout(() => {
-      hideLoader();
-      iziToast.error({
-        title: 'Error',
-        message: 'Something went wrong. Please try again later.',
-        position: 'center',
-      });
-    }, 2000);
-  }
+      }, 2000);
+    });
 });
 
 function showLoader() {
